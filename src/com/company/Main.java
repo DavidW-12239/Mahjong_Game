@@ -102,6 +102,7 @@ public class Main {
                 red1, red2, red3, red4, green1, green2, green3, green4, white1, white2, white3, white4
         ));
 
+        //hands and the fold cards of users from east, south, west and north
         List eUserCards = new ArrayList<>();
         List sUserCards = new ArrayList<>();
         List wUserCards = new ArrayList<>();
@@ -115,30 +116,34 @@ public class Main {
         int num = 0;
         String card = "";
 
-
+        //deal cards
         for (int i=0; i<13; i++) {
             num = (int)(Math.random()*(max +1));
             card = (String) remainCards.get(num);
             remainCards.remove(card);
             eUserCards.add(card);
+            Collections.sort(eUserCards);
             max -= 1;
 
             num = (int)(Math.random()*(max +1));
             card = (String) remainCards.get(num);
             remainCards.remove(card);
             sUserCards.add(card);
+            Collections.sort(sUserCards);
             max -= 1;
 
             num = (int)(Math.random()*(max +1));
             card = (String) remainCards.get(num);
             remainCards.remove(card);
             wUserCards.add(card);
+            Collections.sort(wUserCards);
             max -= 1;
 
             num = (int)(Math.random()*(max +1));
             card = (String) remainCards.get(num);
             remainCards.remove(card);
             nUserCards.add(card);
+            Collections.sort(nUserCards);
             max -= 1;
         }
         System.out.println("eUserCards: " + eUserCards);
@@ -147,38 +152,40 @@ public class Main {
         System.out.println("nUserCards: " + nUserCards);
         System.out.println(" ");
 
+        //draw and fold cards for each user
         boolean checkWin = false;
         while (!checkWin && remainCards.size() > 0){
             num = (int)(Math.random()*(max +1));
-            drawAndFold(eUserCards, eUserFoldCards, remainCards, num, map);
+            drawAndFold("eUser", eUserCards, eUserFoldCards, remainCards, num, map);
             max -= 1;
 
             num = (int)(Math.random()*(max +1));
-            drawAndFold(sUserCards, sUserFoldCards, remainCards, num, map);
+            drawAndFold("sUser", sUserCards, sUserFoldCards, remainCards, num, map);
             max -= 1;
 
             num = (int)(Math.random()*(max +1));
-            drawAndFold(wUserCards, wUserFoldCards, remainCards, num, map);
+            drawAndFold("wUser", wUserCards, wUserFoldCards, remainCards, num, map);
             max -= 1;
 
             num = (int)(Math.random()*(max +1));
-            drawAndFold(nUserCards, nUserFoldCards, remainCards, num, map);
+            drawAndFold("nUser", nUserCards, nUserFoldCards, remainCards, num, map);
             max -= 1;
         }
     }
 
-    public static void drawAndFold(List userCards, List userFoldCards, List remainCards, int num, HashMap map){
+    public static void drawAndFold(String user, List userCards, List userFoldCards, List remainCards, int num, HashMap map){
         String card = (String) remainCards.get(num);
         remainCards.remove(card);
         userCards.add(card);
-        System.out.println("Your hand: " + userCards);
+        Collections.sort(userCards);
+        System.out.println(user + ", your hand: " + userCards);
         if (checkWin(userCards, map) == true){
-            System.out.println("Congratulations, You have won the game!");
+            System.out.println("Congratulations, " + user + " has won the game!");
         }
         else{
             boolean checkCard = false;
             while (!checkCard){
-                System.out.println("Which card do you want to fold?");
+                System.out.println(user + ", which card do you want to fold?");
                 Scanner input = new Scanner(System.in);
                 card = input.next();
                 if (userCards.contains(card)){
@@ -186,7 +193,9 @@ public class Main {
                     userCards.remove(card);
                     userFoldCards.add(card);
                     System.out.println("Fold successfully!");
-                    System.out.println("Your current card: " + userCards);
+                    System.out.println(user + ", your current card: " + userCards);
+                    System.out.println(user + ", the cards you folded are: " + userFoldCards);
+                    System.out.println("");
                 }
                 else{
                     System.out.println("No such card, please select again");
@@ -196,40 +205,43 @@ public class Main {
     }
 
     public static boolean checkWin(List userCards, HashMap map){
-        int[] cards = new int[14];
+
+        List cards = new ArrayList<>();
         int index = 0;
         for (Object card : userCards){
             int cardNum = (int) map.get(card);
-            cards[index] = cardNum;
+            cards.add(cardNum);
             index++;
         }
-        Arrays.sort(cards);
-        for(int card:cards)
-            System.out.print(card + ", ");
-        System.out.println();
+        Collections.sort(cards);
+        System.out.println(cards);
 
         //Check Triplet
-        int count = 0;
-        for(int i=0; i<cards.length-2; i++){
-            if (cards[i] == cards[i+1] && cards[i+1] == cards[i+2]){
-                System.out.println("Pair!");
+        for(int i=0; i<cards.size()-2; i++){
+            if ((int)cards.get(i) > 10 && cards.get(i) == cards.get(i+1) && cards.get(i+1) == cards.get(i+2)){
+                System.out.println("Triplet!");
+                cards.remove(i);
+                cards.remove(i);
+                cards.remove(i);
+                i--;
             }
         }
 
+        //Check	Sequence
+        for(int i=0; i<cards.size()-2; i++){
+            if ((int)cards.get(i) > 10 && (int)cards.get(i+1)-(int)cards.get(i) == 1 && (int)cards.get(i+2)-(int)cards.get(i+1) == 1){
+                System.out.println("Sequence!");
+                cards.remove(i);
+                cards.remove(i);
+                cards.remove(i);
+                i--;
+            }
+        }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+        //Check Pair
+        if (cards.size() == 2 && cards.get(0) == cards.get(1)){
+            return true;
+        }
 
         return false;
     }
